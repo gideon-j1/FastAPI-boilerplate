@@ -1,38 +1,54 @@
-from fastapi import APIRouter
-from app.models import Item
-from fastapi import Depends
-from fastapi import FastAPI, Response
-from fastapi.responses import HTMLResponse
+from app.models import Book
+from core.schemas import BookRequest
+from database.database import create_tables , get_db
+from fastapi import APIRouter , Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+    
+    
 
-from core.schemas import UserListRequest
+from typing import Any
 
-from database.database import get_session
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 book = APIRouter()
 
-
-# @app.get("/favicon.ico", response_class=HTMLResponse)
-# async def favicon():
-#     return Response(content="", media_type="image/x-icon")
-
-
-
-
 @book.get("/h")
-async def hello():
-    return {"message": "안녕하세요 파이보"}
-
-
-
-
-# @router.get("/lists",response_model=UserListRequest, description="Get book list")
-# async def get_books(
-#     lists: Item = Depends(get_session)    
-# ) -> None:
+async def hello(db: AsyncSession = Depends(get_db)) -> None:
     
-#     print(lists)
-#     return lists
+    book = Book(description='test' , price=5000)
+    db.add(book)
+    db.commit()
+    
+    # result = await db.execute("SELECT * FROM book")
+    # print(result)
+    return {"message": "안녕하세요"}
+
+@book.get("/lists", description="Get book list")
+async def get_books(
+    db: AsyncSession = Depends(get_db)    
+) -> None:
+    
+    result = await db.execute("SELECT * FROM book")
+    users = result.mappings().all()
+    
+    print(users)
+    return users
+
+
+# @book.post("/add",response_model=BookRequest, description="Add book")
+# async def add_book(
+#     item: Book,
+#     session: AsyncSession = Depends(get_session)
+# ) -> Any: 
+    
+#     new_book = Book(description=item.description , price = item.price)
+#     session.add(new_book)
+    
+#     await session.commit()
+#     await session.refresh(new_book)
+    
+#     return {"message" : "Book created" , "item" : new_book}
+    
+#     return 
 
 # @router.post("/add/book",response_model=,description='Post book 1')
 # async def add_book(

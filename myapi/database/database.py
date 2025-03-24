@@ -1,14 +1,16 @@
 from sqlalchemy.engine.url import URL
 from collections.abc import AsyncGenerator
-
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+from contextlib import asynccontextmanager
 
-from core.config import get_settings
+from app.models import Base
+
+from content import SQLALCHEMY_DATABASE_URL
 
 
 def new_async_engine(uri : URL) -> AsyncEngine:
@@ -21,25 +23,32 @@ def new_async_engine(uri : URL) -> AsyncEngine:
         pool_recycle=600,
     )
 
-engine = new_async_engine(get_settings().sqlalchemy_database_url)
-async_session = async_sessionmaker(engine, expire_on_commit=False)
+# 인스턴스
+engine = new_async_engine(SQLALCHEMY_DATABASE_URL)
+#Factory session이 필요한 이유 트랜잭션 (crud를 수행하기 위해 필요 )
+async_session =async_sessionmaker(autocommit=False,bind=engine,expire_on_commit=False)
 
 
-r"""
-    데이터베이스 세션 생성
-"""
-def get_async_db():
-    db = async_session()    
+@asynccontextmanager
+async def create_tables():
+    if engine is None:
+        raise Exception("DatabaseSessionManger is not initialzed")
+    async with engine.begin() as conn:
+
+        try:           
+            await conn.run_sync(Base.metadata.create_all)
+        except Exception:
+            await conn.rollback()
+            raise
+    yield
+
+async def get_db() -> AsyncGenerator[AsyncSession]:
+    db = async_session()
     try:
         yield db
     finally:
-        db.close()
-        
+        await db.close()
 
-r"""
-    데이터베이스 관리하는 함수 get_async_db() 생명 주기 관리 
-    컨텍스트 내에서 적절하게 자동으로 닫히고 열리게끔 
-"""
-async def get_session() -> AsyncGenerator[AsyncSession]:
-    async with get_async_db as session:
-        yield session
+
+
+

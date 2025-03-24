@@ -2,3 +2,5 @@
 Lib
 Scripts
 include
+__pycache__
+content.py
