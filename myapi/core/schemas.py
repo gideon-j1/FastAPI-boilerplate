@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 
-class BaseRequest(BaseModel):
-    pass
-
-
-class BookRequest(BaseRequest):
-    id: str
+class BookRequest(BaseModel):
     description: str
     price: int
+
+class BookResponse(BookRequest):
+    id: int
     
+    class Config:
+        orm_mode = True    

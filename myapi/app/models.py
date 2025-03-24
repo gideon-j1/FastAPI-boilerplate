@@ -21,5 +21,7 @@ class Book(Base):
     )
     
     price: Mapped[int] = mapped_column(
-        BigInteger , nullable=False
+        Integer , nullable=False
     )
+    
+    
