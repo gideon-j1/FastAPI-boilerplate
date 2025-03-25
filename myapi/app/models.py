@@ -1,14 +1,12 @@
-from pydantic import BaseModel
-from sqlalchemy import Column,Integer,String,TIMESTAMP,Boolean,text
-import uuid
-from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, String, Uuid, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from datetime import datetime
+from sqlalchemy import Integer,String
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 
 from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
-
+        
 class Book(Base):
     __tablename__ = 'book'
     

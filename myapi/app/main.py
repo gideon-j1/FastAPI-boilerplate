@@ -23,6 +23,9 @@ async def lifespan(app: FastAPI):
 
     
 app = FastAPI(lifespan=lifespan)
+
+
+
 app.include_router(book)
 
 
@@ -45,19 +48,10 @@ app.add_middleware(
     allowed_hosts = origins
 )
 
+
+
 @app.get("/")
 async def root(req: Request):
     print(req.headers['host'])
     return {"message": "Hello FastAPI"}
-
-from fastapi.responses import PlainTextResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-
-@app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request,exc):
-    return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
-
-
-######################################
-
 
