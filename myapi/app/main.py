@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     
@@ -49,9 +50,31 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def no_response_middleware(request: Request, call_next):
+
+    response = await call_next(request)
+    
+    if response.status_code == 500:
+        raise HTTPException({"message" : f"{response.status_code} 500 Internal Server Error"})
+    
+    elif response.status_code == 404:
+        return HTTPException({"message" : f"{response.status_code} 404 Not Found"})
+
+    elif response.status_code == 400:
+        return HTTPException({"message" : f"{response.status_code} 400 Bad Request"})
+
+    elif response.status_code == 422:
+        return HTTPException({"message" : f"{response.status_code} 422 Unprocessable Entity"})
+    
+    return response
+
+
+####################################################################
+
+
 
 @app.get("/")
 async def root(req: Request):
     print(req.headers['host'])
     return {"message": "Hello FastAPI"}
-

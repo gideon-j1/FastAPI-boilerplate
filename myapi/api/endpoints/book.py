@@ -1,26 +1,43 @@
 from app.models import Book
-from core.schemas import BookRequest,BookResponse
 from database.database import get_db
-from fastapi import APIRouter , Depends , HTTPException , Response , Request
 
+from core.schemas import (
+    BookRequest,
+    BookResponse,
+)
+
+
+from fastapi import (
+    status,
+    APIRouter,
+    Depends,   
+    HTTPException
+)
 
 try:
-    
     from sqlalchemy import insert,select , delete
     from sqlalchemy.ext.asyncio import AsyncSession
     
 except ImportError:
     raise ImportError("Please install sqlachemy")
 
-from core.handler import UnicornException
 
+
+r"""
+                
+                2025.03.25
+ [] : status_code request 할때 받아서 에러처리하기
+
+
+"""
 book = APIRouter()
 
-@book.post("/add", description="Add book")
+@book.post("/add", description="Add book", status_code=status.HTTP_201_CREATED)
+
 async def add_book(payload: BookRequest, db: AsyncSession = Depends(get_db)) -> None:
     
     if payload.description == "" or payload.price == "":
-        UnicornException(statuss_code=500)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
         
     new_book = Book(description=payload.description,price=payload.price)
    
@@ -31,7 +48,7 @@ async def add_book(payload: BookRequest, db: AsyncSession = Depends(get_db)) -> 
     return {"message" : "성공입니다"}
     
 
-@book.get("/lists", description="Get book list")
+@book.get("/lists", description="Get book list", status_code=status.HTTP_200_OK)
 async def get_books(
     db: AsyncSession = Depends(get_db)    
 ) -> dict:
@@ -47,7 +64,7 @@ async def get_books(
     return {"message" : "성공입니다", "list" : [BookResponse.model_validate(b) for b in lists]}
 
 
-@book.delete("/delete/{user_id}",description="delete book")
+@book.delete("/delete/{user_id}",description="delete book", status_code=status.HTTP_200_OK)
 async def delete_book(
     user_id: int,
     db: AsyncSession = Depends(get_db)
@@ -60,7 +77,7 @@ async def delete_book(
     db_book = book.scalar_one_or_none()
     
     if not db_book:
-        UnicornException(status_code=500)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     await db.delete(db_book)
     await db.commit()
@@ -68,7 +85,7 @@ async def delete_book(
     return {"message" : "성공입니다."}
 
 
-@book.put("/update/{user_id}",description="update price")
+@book.put("/update/{user_id}",description="update price",status_code=status.HTTP_201_CREATED)
 async def update_price(
     user_id: int,
     payload : BookRequest,
@@ -81,7 +98,7 @@ async def update_price(
     db_book = book.scalar_one_or_none()
     
     if not db_book:
-         UnicornException(status_code=500)
+         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     db_book.price = payload.price
     
