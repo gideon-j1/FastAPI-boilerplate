@@ -1,5 +1,5 @@
 from app.models import Book
-from core.schemas import BookRequest
+from core.schemas import BookRequest,BookResponse
 from database.database import create_tables , get_db
 from fastapi import APIRouter , Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +35,7 @@ async def get_books(
     for b in lists:
         print(vars(b))
     
-    return {"message" : "성공입니다"}
+    return {"message" : "성공입니다", "list" : [BookResponse.model_validate(b) for b in lists]}
 
 
 
