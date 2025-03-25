@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-
+from pydantic import BaseModel, Field , ConfigDict ,  StringConstraints
+from typing import Optional , Annotated
 
 
 class BookRequest(BaseModel):
@@ -7,7 +7,8 @@ class BookRequest(BaseModel):
     price: int
 
 class BookResponse(BookRequest):
-    id: str
+    id: int
 
     class Config:
         from_attributes = True
+        

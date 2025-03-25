@@ -12,10 +12,10 @@ Base = declarative_base()
 class Book(Base):
     __tablename__ = 'book'
     
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True
     )
-    
+
     description: Mapped[str] = mapped_column(
         String(256), nullable=False
     )
