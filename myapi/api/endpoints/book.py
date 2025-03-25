@@ -26,9 +26,9 @@ except ImportError:
 r"""
                 
                 2025.03.25
- [] : status_code request 할때 받아서 에러처리하기
-
-
+    [x] : status_code request 할때 받아서 에러처리하기
+    [] : get filter price값만 추출 
+     
 """
 book = APIRouter()
 
@@ -106,3 +106,25 @@ async def update_price(
     await db.refresh(db_book)
     
     return {"message" : "성공입니다."}
+
+
+@book.get("/lists_price",description="Get book list price", status_code=status.HTTP_200_OK)
+async def get_book_price(
+    db:AsyncSession = Depends(get_db)
+) -> None:
+    
+    stmt = select(Book).where(Book.price < 100)
+    prices = await db.execute(stmt)
+    lists = prices.scalars().all() 
+    
+    if not lists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    
+    
+    for b in lists:
+        print(vars(b))
+    
+    return {
+        "message": "성공입니다.",
+        "lists": [BookResponse.model_validate(b) for b in lists]
+    }
