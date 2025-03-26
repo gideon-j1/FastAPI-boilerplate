@@ -44,4 +44,5 @@ class Token(BaseResquest):
     refresh_token: str
     refresh_token_expires_at: int
 
-    
+class UserInDB(BaseResquest):
+    hashed_password: str
