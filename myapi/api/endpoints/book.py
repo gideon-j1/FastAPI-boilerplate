@@ -23,13 +23,6 @@ except ImportError:
 
 
 
-r"""
-                
-                2025.03.25
-    [x] : status_code request 할때 받아서 에러처리하기
-    [] : get filter price값만 추출 
-     
-"""
 book = APIRouter()
 
 @book.post("/add", description="Add book", status_code=status.HTTP_201_CREATED)
