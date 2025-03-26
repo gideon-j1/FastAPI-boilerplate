@@ -30,7 +30,10 @@ book = APIRouter()
 async def add_book(payload: BookRequest, db: AsyncSession = Depends(get_db)) -> None:
     
     if payload.description == "" or payload.price == "":
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="descript or price empty"
+            )
         
     new_book = Book(description=payload.description,price=payload.price)
    
@@ -50,6 +53,12 @@ async def get_books(
     
     books = await db.execute(stmt)
     lists = books.scalars().all()  
+    
+    if not lists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="list not found Plesas add book"
+            )
       
     for b in lists:
         print(vars(b))
@@ -68,9 +77,11 @@ async def delete_book(
     book = await db.execute(stmt)
         
     db_book = book.scalar_one_or_none()
-    
     if not db_book:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="book id not found"
+            )
     
     await db.delete(db_book)
     await db.commit()
@@ -90,8 +101,18 @@ async def update_price(
     
     db_book = book.scalar_one_or_none()
     
+    if db_book.price == payload.price:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="duplicate input price"
+        )
+    
     if not db_book:
-         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+         raise HTTPException(
+             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+             detail="price empty"
+             )
+         
     
     db_book.price = payload.price
     
@@ -111,8 +132,10 @@ async def get_book_price(
     lists = prices.scalars().all() 
     
     if not lists:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="book price empyt"                
+            )
     
     for b in lists:
         print(vars(b))

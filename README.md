@@ -6,6 +6,7 @@
 - Fast API
 - Uvicorn
 - Sqlalchemy
+- JWT
 
 
 ## Installing & Run Server
@@ -14,7 +15,7 @@
 
 python -m venv venv
 
-cd venv 
+cd myapi
 
 Scripts/activate
 
