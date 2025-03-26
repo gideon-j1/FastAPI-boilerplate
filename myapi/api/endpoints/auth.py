@@ -5,8 +5,12 @@ from fastapi import (
     status,
 )
 
-from core.schemas import UserRequest
+from fastapi.security import OAuth2PasswordBearer
 
+from core.schemas import UserRequest
+from app.models import AuthUser
+from database.database import get_db
+from core.securit import verify_password , save_hash_password
 
 try:
     from sqlalchemy import insert,select , delete
@@ -16,23 +20,39 @@ except ImportError:
     raise ImportError("Please install sqlachemy")
 
 
-book = APIRouter()
+
+auth = APIRouter()
 
 
-
-@book.post(
+@auth.post(
     "/register",
-    description="create access token for request using user",
+    description="create access request for a user",
     status_code=status.HTTP_201_CREATED
 )
-async def login_token(
-    new_user: UserRequest,   
-    db: AsyncSession = Depends()
+async def create_user(
+    payload: UserRequest,
+    db: AsyncSession = Depends(get_db)
 ) -> None:
     
-    
-    print(new_user.email)
-    
+    hashed = save_hash_password(payload.password)
+        
+    new_user = AuthUser(email=payload.email,password=hashed)
+        
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     
     return {"message" : "성공입니다"}
+
+
+@auth.post(
+    "/login",
+    description="get token for a user"
+)
+async def login_user(
+    payload: UserRequest,
+    db: AsyncSession = Depends(get_db)
+)-> None:
+    
+    return ""
 

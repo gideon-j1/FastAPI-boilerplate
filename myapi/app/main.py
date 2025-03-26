@@ -4,7 +4,8 @@ from app.models import Book
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from api.endpoints.book import book  
+from api.endpoints.book import book
+from api.endpoints.auth import auth
 
 from database.database import  engine, Base , create_tables , async_session
 from contextlib import asynccontextmanager
@@ -28,6 +29,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 app.include_router(book)
+app.include_router(auth)
 
 
 origins: list[str] = [

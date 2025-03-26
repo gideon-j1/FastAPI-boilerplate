@@ -1,5 +1,4 @@
-from pydantic import BaseModel,ConfigDict
-
+from pydantic import BaseModel,ConfigDict,EmailStr
 
 ###############  Book ################
 
@@ -24,7 +23,7 @@ class BookResponse(BookRequest):
 
 ############### Auth ################
 class UserRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
     
 
