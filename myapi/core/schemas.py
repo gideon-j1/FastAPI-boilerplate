@@ -1,7 +1,8 @@
 from pydantic import BaseModel,ConfigDict,EmailStr
+from datetime import datetime
+from typing import Optional
 
 ###############  Book ################
-
 class BookRequest(BaseModel):
     description: str
     price: int
@@ -37,12 +38,9 @@ class BaseResquest(UserRequest):
 
 
 
-class Token(BaseResquest):
+class Token(BaseModel):
     access_token: str
-    token_type: str = "Bearer"
-    expires_at: int
+    expires_at: datetime
     refresh_token: str
-    refresh_token_expires_at: int
+    refresh_token_expires_at: datetime
 
-class UserInDB(BaseResquest):
-    hashed_password: str

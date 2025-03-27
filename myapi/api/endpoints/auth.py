@@ -6,12 +6,14 @@ from fastapi import (
     HTTPException
 )
 
-
+from core.securit import verify_password
 from core.schemas import UserRequest
 from app.models import AuthUser
 from database.database import get_db
 
-from core.securit import create_access_token ,save_hash_password
+from core.securit import save_hash_password
+from core.jwt import create_token
+
 
 try:
     from sqlalchemy import insert,select , delete
@@ -25,12 +27,15 @@ except ImportError:
 
 auth = APIRouter()
 
+ACCESS_TOKEN_EXPIRE_MINUTES = 300 # 5 hour
+REFRESH_TOKEN_EXPIRE_MINUTES = 28 * 24 * 60 # 28 day
 
 @auth.post(
     "/register",
     description="create access request for a user",
     status_code=status.HTTP_201_CREATED
 )
+
 async def create_user(
     payload: UserRequest,
     db: AsyncSession = Depends(get_db)
@@ -46,11 +51,6 @@ async def create_user(
     
     return {"message" : "성공입니다"}
 
-
-
-from core.securit import SECRET_KEY , ACCESS_TOKEN_EXPIRE_MINUTES
-
-from core.securit import verify_password
 
 @auth.post(
     "/login",
@@ -88,9 +88,25 @@ async def login_user(
         )
             
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+        
+    access_token = create_token(
+        data={
+            "sub": "user",
+            "id": user.id
+        },
+        expires_delta=access_token_expires
+    )
     
-    access_token = create_access_token(data={"sub" : "test_user"},expires_delta=access_token_expires)
+    refresh_token = create_token(
+        data={
+            "sub" : "user",
+            "id" : user.id
+        },
+        expires_delta=refresh_token_expires
+    )
     
-
-    return {"message" : f"성공입니다. Token : {access_token}"}
-
+    return {
+        "access": f"{access_token.access_token}",
+        "refresh": f"{refresh_token.refresh_token}"
+    }

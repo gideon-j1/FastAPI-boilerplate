@@ -1,4 +1,4 @@
-from sqlalchemy import Integer,String
+from sqlalchemy import Integer,String,Boolean,ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sqlalchemy.orm import declarative_base
@@ -38,3 +38,7 @@ class AuthUser(Base):
     password: Mapped[str] = mapped_column(
         String(200) , nullable=False
     )
+    
+    
+    
+    
