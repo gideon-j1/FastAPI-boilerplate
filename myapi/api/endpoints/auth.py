@@ -50,10 +50,7 @@ async def create_user(
 
 from core.securit import SECRET_KEY , ACCESS_TOKEN_EXPIRE_MINUTES
 
-r"""
-    [] : 이메일 중복으로 로그인 할시 에러처리하기
-    [] : 비밀번호 틀려도 토큰 발급 되고 있음
-"""
+from core.securit import verify_password
 
 @auth.post(
     "/login",
@@ -76,6 +73,13 @@ async def login_user(
     
     user = query.scalars().first()
 
+    hashed = verify_password(payload.password , user.password)
+        
+    if not hashed:
+        raise HTTPException(
+            status_code = status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="user password is wrong"
+        )
     
     if not user:
         raise HTTPException(
@@ -84,7 +88,6 @@ async def login_user(
         )
             
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    print(access_token_expires)
     
     access_token = create_access_token(data={"sub" : "test_user"},expires_delta=access_token_expires)
     
