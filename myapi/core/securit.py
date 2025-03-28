@@ -1,4 +1,11 @@
 import bcrypt
+import jwt
+
+
+from content import SECRET_KEY
+from fastapi import HTTPException,status
+
+ALGORITHM = "HS256"
 
 def verify_password(password: str , hashed_password: str)-> bool:
     
@@ -17,3 +24,22 @@ def save_hash_password(passoword: str) -> str:
     hash = bcrypt.hashpw(bytes,salt)
         
     return hash.decode("utf-8")
+
+def verify_jwt_token(token: str) -> bool:
+    
+    try:
+        decoded_jwt = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
+        
+        if len(decoded_jwt) > 0:
+            return True
+        
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token expried"
+            )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Invalid token a signauture"
+        )

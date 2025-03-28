@@ -92,16 +92,14 @@ async def login_user(
         
     access_token = create_token(
         data={
-            "sub": "user",
-            "id": user.id
+            "iss": "username",
         },
         expires_delta=access_token_expires
     )
     
     refresh_token = create_token(
         data={
-            "sub" : "user",
-            "id" : user.id
+            "iss" : "username",
         },
         expires_delta=refresh_token_expires
     )
