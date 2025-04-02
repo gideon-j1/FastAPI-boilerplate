@@ -5,9 +5,9 @@
 - Python 3.12
 - Fast API
 - Uvicorn
-- Sqlalchemy
+- PostgreSQL + Sqlalchemy (sharding)
 - JWT
-
+- Redis (Refresh Token)
 
 ## Installing & Run Server
 
@@ -19,7 +19,7 @@ cd myapi
 
 Scripts/activate
 
-pip install fastapi uvicorn sqlalchemy ~ 
+pip install fastapi uvicorn sqlalchemy ~~  
 
 uicorn app.main:app --reload
 

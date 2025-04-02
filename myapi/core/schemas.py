@@ -40,7 +40,7 @@ class BaseResquest(UserRequest):
 
 class Token(BaseModel):
     access_token: str
-    expires_at: datetime
+    expires_at: datetime | None
     refresh_token: str
-    refresh_token_expires_at: datetime
+    refresh_token_expires_at: datetime | None
 

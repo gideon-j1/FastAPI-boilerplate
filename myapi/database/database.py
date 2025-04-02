@@ -16,6 +16,10 @@ from app.models import Base
 
 from content import SQLALCHEMY_DATABASE_URL
 
+try:
+    import redis
+except ImportError:
+    raise ImportError("Pleas install redis")
 
 def new_async_engine(uri : URL) -> AsyncEngine:
     return create_async_engine(
@@ -53,6 +57,10 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
     finally:
         await db.close()
 
+############################# Redis DB ###############################
 
-
-
+redis_client = redis.Redis(
+    host="localhost",
+    port=6379,
+    db=0
+)
