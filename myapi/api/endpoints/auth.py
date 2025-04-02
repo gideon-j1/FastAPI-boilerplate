@@ -10,9 +10,11 @@ from core.securit import verify_password
 from core.schemas import UserRequest
 from app.models import AuthUser
 from database.database import get_db
+from database.database import redis_client
 
 from core.securit import save_hash_password
 from core.jwt import create_token
+from core.redis import add_redis_item
 
 
 try:
@@ -22,7 +24,6 @@ try:
     
 except ImportError:
     raise ImportError("Please install sqlachemy or import datetime")
-
 
 
 auth = APIRouter()
@@ -104,37 +105,19 @@ async def login_user(
         expires_delta=refresh_token_expires
     )
     
+    token ={
+        "access" : access_token.access_token,
+        "refresh" : refresh_token.refresh_token
+    }
+    
+    add_redis_item(token)
+    
     return {
         "access": f"{access_token.access_token}",
         "refresh": f"{refresh_token.refresh_token}"
     }
 
     
-    
-
-from database.database import redis_client
-from core.schemas import Token
-from typing import Dict,Any
-
-@auth.post("/redis")
-async def add_redis_item(
-    token: Dict[Any,Any] = None) -> None:
-    
-    # test token
-    # payload = {
-    # "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VybmFtZSIsImV4cCI6MTc0MzU5NTI2MiwiaWF0IjoxNzQzNTk1MjAyfQ.miY2Dq5R-OIpKcJORuzcASWLiyslf73FwSp2SmWvlOCQ",
-    # "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VybmFtZSIsImV4cCI6MTc0NjAxNDQwMiwiaWF0IjoxNzQzNTk1MjAyfQ.oIy3qgV9682N9JOJnQvV7VriEHo7nAa-DMGihNssi92k"
-    # }
-    
-    item = redis_client.set(f"{token["access"]}" , f"{token["refresh"]}")
-    
-    return {"message" : "성공입니다."}
-
-
-import jwt 
-import bcrypt
-from core.securit import SECRET_KEY,ALGORITHM
-
 
 @auth.get("/get_redis")
 async def get_refresh_token()->None:
