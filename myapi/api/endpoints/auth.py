@@ -26,9 +26,12 @@ except ImportError:
     raise ImportError("Please install sqlachemy or import datetime")
 
 
+from datetime import date,datetime,timezone,timedelta
+import uuid
+
 auth = APIRouter()
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 1 # 5 hour
+ACCESS_TOKEN_EXPIRE_MINUTES = 30 # 5 hour
 REFRESH_TOKEN_EXPIRE_MINUTES = 28 * 24 * 60 # 28 day
 
 @auth.post(
@@ -89,27 +92,39 @@ async def login_user(
         )
             
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    
     refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+        
+    user_ud = str(uuid.uuid4())[:8]
         
     access_token = create_token(
         data={
+            "id" : user_ud,
             "iss": "username",
         },
         expires_delta=access_token_expires
     )
     
+    print(access_token)
+    
     refresh_token = create_token(
         data={
+            "id" : user_ud,
             "iss" : "username",
         },
         expires_delta=refresh_token_expires
     )
     
+    exp = str(access_token.expires_at.timestamp()).split(".")[0]
+    n_exp = int(exp)
+    
     token ={
+        "id" : access_token.id,
         "access" : access_token.access_token,
+        "exp" : n_exp,
         "refresh" : refresh_token.refresh_token
     }
-    
+
     add_redis_item(token)
     
     return {
@@ -117,67 +132,77 @@ async def login_user(
         "refresh": f"{refresh_token.refresh_token}"
     }
 
-    
+import time
+from typing import Dict,Any
+import json
+
+r"""
+ token ={
+     "id" : "1f321321",
+     "exp" : 13213,
+     "token access" : ey321321321flk.jadsfojdsahfkjl~
+ }
+"""
 
 @auth.get("/get_redis")
-async def get_refresh_token()->None:
+async def get_refresh_token(token: Dict[Any,Any] = None)->None:
     
-    item = redis_client.get("token")    
-    
-    time = str(datetime.now(timezone.utc) + timedelta(minutes=1))
-    
-    t = time.split()
-    
-    year_t = t[0].split('-')
-    
-    y1 = int(year_t[0])
-    month = int(year_t[1])
-    day = int(year_t[2])
-    
-    total_y = y1+month+day
-    
-    current_timer = t[1].split(':')
-
-    hour = int(current_timer[0])
-    minute = int(current_timer[1])
-    second = int(current_timer[2].split('.')[0])
-
-    total_h = hour+minute+second
-    
-    cur_time_total = total_h + total_y
-
-    f_t = str(datetime.fromtimestamp(1743513559)).split()
-    
-    year_f = f_t[0].split('-')
-    
-    y_f_1 = int(year_f[0])
-    y_f_2 = int(year_f[1])
-    y_f_3 = int(year_f[2])
-    
-    total_y_f = y_f_1 + y_f_2 + y_f_3
-    
-    current_timer_f_t = f_t[1].split(':')
-    
-    hour_y_f = int(current_timer_f_t[0])
-    minute_y_f = int(current_timer_f_t[1])
-    second_y_f = int(current_timer_f_t[2].split('.')[0])
-    
-    total_y_f2 = hour_y_f + minute_y_f + second_y_f
-    
-    redis_total = total_y_f + total_y_f2
-    
-    if cur_time_total < redis_total:
-        raise Exception("cache token are larger! ")
-    
-    new_token = item
-    
-    if (type(new_token) is not bytes):
-        raise Exception("not token type")
+    token_list = redis_client.lrange("mytoken",0,100)    
         
+    # [x] : id가 동일한지 체크  example: 1cc6418f 
+    # [x] : 키값(redis 에 저장된 exp값을 가져와서 현재시간이랑 비교하고 리프레시 토큰도 동일하진 비교)
     
+    # [x] : yes
+        # [x] : 넘어가고
+        
+    # [x] : no
+        # [x] : 새로운 토큰을 발급하고 -> new token을 id에 맞게 다시 적용
     
-    return {
-        "message" : "성공입니다",
-        "item" : f"{item.decode("utf-8")}"
-    }
+    user_id = "9b755e04" 
+    
+    cur_time = int(time.time())
+    for t in token_list:
+        json_str = t.decode()
+        
+        token_data = json.loads(json_str)
+                
+        if token_data["id"] == user_id:
+            if 1743922031 < cur_time:
+                access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+                access_token = create_token(
+                    data={
+                        "id" : user_id,
+                        "iss": "username",
+                    },
+                    expires_delta=access_token_expires
+                )
+                
+                for idx,t2 in enumerate(token_list):
+             
+                        jsont_str2 = t2.decode()
+                        
+                        token_data2 = json.loads(jsont_str2)
+                        
+                        
+                        if token_data2["id"] == user_id:
+                            
+                            redis_payload = {
+                                "id" : user_id,
+                                "key" : token_data2["key"],
+                                "access" : access_token.access_token,
+                                "refresh" : token_data2["refresh"],
+                            }
+                            
+                            redis_client.lset("mytoken",idx,json.dumps(redis_payload))
+                            
+                            return {
+                                "mesaage" : "creat new access token" 
+                            }
+                                
+            else:
+               raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="expire time is valid.") 
+            
+                
+        
     

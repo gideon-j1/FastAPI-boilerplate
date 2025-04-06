@@ -14,7 +14,6 @@ import base64
 from core.securit import verify_jwt_token , ALGORITHM
 
 
-
 def create_token(
     data: dict , 
     expires_delta: timedelta | None =None,
@@ -24,9 +23,11 @@ def create_token(
     
         
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        KST = timezone(timedelta(hours=9))
+        expire = datetime.now(KST)+expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=20)
+        KST = timezone(timedelta(hours=9))
+        expire = datetime.now(KST) + timedelta(minutes=30)
     
     iat = int(time.time())
 
@@ -42,6 +43,7 @@ def create_token(
     
     if valided_jwt:        
         return Token(
+            id=to_encode["id"],
             access_token=encoded_jwt,
             expires_at=to_encode['exp'],
             refresh_token=encoded_jwt,

@@ -39,6 +39,7 @@ class BaseResquest(UserRequest):
 
 
 class Token(BaseModel):
+    id: str
     access_token: str
     expires_at: datetime | None
     refresh_token: str
