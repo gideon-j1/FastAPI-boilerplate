@@ -149,14 +149,15 @@ async def get_refresh_token(token: Dict[Any,Any] = None)->None:
     
     token_list = redis_client.lrange("mytoken",0,100)    
         
-    # [x] : id가 동일한지 체크  example: 1cc6418f 
-    # [x] : 키값(redis 에 저장된 exp값을 가져와서 현재시간이랑 비교하고 리프레시 토큰도 동일하진 비교)
+
     
-    # [x] : yes
-        # [x] : 넘어가고
+    r"""
+        들어오는 토큰에 id가 현재 redis list에서 가져온 id와 동일한지 검사
+        -> redis key에 저장된 exp값과 현재 시간 검사
         
-    # [x] : no
-        # [x] : 새로운 토큰을 발급하고 -> new token을 id에 맞게 다시 적용
+        -> yse (토큰 유효기간이 아직 남아있음)
+        -> no (새로운 토큰 발급하고 redis에 새로운 토큰으로 교체하고 토큰 발급)
+    """
     
     user_id = "9b755e04" 
     
@@ -197,8 +198,9 @@ async def get_refresh_token(token: Dict[Any,Any] = None)->None:
                             redis_client.lset("mytoken",idx,json.dumps(redis_payload))
                             
                             return {
-                                "mesaage" : "creat new access token" 
-                            }
+                                "mesaage" : "creat new access token",
+                                "token" : f"{access_token.access_token}"
+                            } 
                                 
             else:
                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="expire time is valid.") 
