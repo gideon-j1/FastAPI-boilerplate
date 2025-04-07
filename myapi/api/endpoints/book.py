@@ -1,9 +1,10 @@
 from app.models import Book
-from database.database import get_db
+from database.database import get_db ,metadata  ,engine,async_new_book
 
 from core.schemas import (
     BookRequest,
     BookResponse,
+    NewBookResponse,
 )
 
 
@@ -143,4 +144,84 @@ async def get_book_price(
     return {
         "message": "성공입니다.",
         "lists": [BookResponse.model_validate(b) for b in lists]
+    }
+    
+########################## LIST Partiotion ##########################
+
+r"""
+                            ------ PSQL command line ------
+    1. CREATE TABLE new_book (
+        id INTEGER,
+        description TEXT,
+        price INTEGER,
+        PRIMARY KEY (id, price)  -- 가격(price)도 기본키의 일부로 추가
+    PARTITION BY LIST (price);
+    파티셔닝 상위 테이블 생성
+    
+    
+    2. create table new_book_fisrt PARTITION OF new_book FOR VALUES IN (0,1,2,3,4,5);
+    create table new_book_second PARTITION OF new_book FOR VALUES IN (6,7,8,9,10,11);
+    파티셔닝 하위 테이블 생성
+
+    3. \d+ new_book;
+    조회 
+        
+    4. Insert into new_book (id,description,price) select id , description , price from book;
+    기존테이블 => 파티셔닝 테이블 마이그레이션
+    
+    5. SELECT tableoid::regclass,* FROM new_book;
+    마이그레이션 된 new_book 조회 (get_new_book)
+    
+    
+    
+"""
+
+@book.get("/partitions",description="get partition list" ,
+          response_model=NewBookResponse,
+          status_code=status.HTTP_200_OK)
+async def get_new_book(
+    db:AsyncSession = Depends(get_db)
+) -> None:
+    
+    new_book = await async_new_book()  
+    print(new_book)    
+
+    first_dict = []
+    second_dict = []
+    
+    for tup in new_book:
+        key = tup[0]
+        values = tup[1:]
+        
+        print(key)
+        
+        if key == "new_book_fisrt":
+            
+            print(values[1])
+
+            first_dict.extend([
+                {
+                "tableoid" : key,
+                "id" : values[0],
+                "description" : values[1],
+                "price" : values[2]    
+                }
+            ])
+            
+            
+        elif key == "new_book_second":
+            second_dict.extend([
+                {
+                "tableoid" : key,
+                "id" : values[0],
+                "description" : values[1],
+                "price" : values[2]    
+                }
+            ])
+            
+    # print(first_dict)
+    
+    return {
+        "message" : "성공입니다",      
+        # "list" : {first_dict}  
     }

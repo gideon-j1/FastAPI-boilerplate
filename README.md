@@ -5,7 +5,14 @@
 - Python 3.12
 - Fast API
 - Uvicorn
-- PostgreSQL + Sqlalchemy (sharding)
+
+- PostgreSQL + Sqlalchemy 
+(list Partitions,range Partitions)
+
+- PostgreSQL + Sqlalchemy 
+(Sharding)
+
+
 - JWT
 - Redis (Refresh Token)
 

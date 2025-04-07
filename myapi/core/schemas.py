@@ -1,8 +1,22 @@
 from pydantic import BaseModel,ConfigDict,EmailStr
 from datetime import datetime
-from typing import Optional
+from typing import Set,List
+
+# tuple 전용 basemodel
+class MyBaseModel(BaseModel):
+    def __hash__(self):
+        return hash((type(self),) ) + tuple(self.__dict__.values())
 
 ###############  Book ################
+
+
+class NewBookList(MyBaseModel):
+    tableoid: str
+    id: int
+    description: str
+    price: int
+    
+    
 class BookRequest(BaseModel):
     description: str
     price: int
@@ -22,7 +36,13 @@ class BookResponse(BookRequest):
         from_attributes = True
         
 
+class NewBookResponse(MyBaseModel):    
+    list: List[NewBookList]
+    model_config = ConfigDict(from_attributes=True)
+      
+
 ############### Auth ################
+
 class UserRequest(BaseModel):
     email: EmailStr
     password: str

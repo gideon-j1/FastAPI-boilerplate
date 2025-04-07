@@ -18,6 +18,8 @@ class Book(Base):
     price: Mapped[int] = mapped_column(
         Integer , nullable=False
     )
+
+
     
 class AuthUser(Base):
     __tablename__ = 'AuthUser'

@@ -16,7 +16,6 @@ from core.securit import save_hash_password
 from core.jwt import create_token
 from core.redis import add_redis_item
 
-
 try:
     from sqlalchemy import insert,select , delete
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -105,7 +104,6 @@ async def login_user(
         expires_delta=access_token_expires
     )
     
-    print(access_token)
     
     refresh_token = create_token(
         data={
@@ -148,8 +146,6 @@ r"""
 async def get_refresh_token(token: Dict[Any,Any] = None)->None:
     
     token_list = redis_client.lrange("mytoken",0,100)    
-        
-
     
     r"""
         들어오는 토큰에 id가 현재 redis list에서 가져온 id와 동일한지 검사
@@ -158,7 +154,6 @@ async def get_refresh_token(token: Dict[Any,Any] = None)->None:
         -> yse (토큰 유효기간이 아직 남아있음)
         -> no (새로운 토큰 발급하고 redis에 새로운 토큰으로 교체하고 토큰 발급)
     """
-    
     user_id = "9b755e04" 
     
     cur_time = int(time.time())
