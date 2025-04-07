@@ -7,10 +7,13 @@
 - Uvicorn
 
 - PostgreSQL + Sqlalchemy 
-(list Partitions,range Partitions)
+(list Partitions)
 
 - PostgreSQL + Sqlalchemy 
 (Sharding)
+
+- PostgreSQL + Sqlalchemy 
+(Master/Slave Replication)
 
 
 - JWT

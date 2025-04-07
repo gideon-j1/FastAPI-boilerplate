@@ -10,12 +10,15 @@ class MyBaseModel(BaseModel):
 ###############  Book ################
 
 
-class NewBookList(MyBaseModel):
+class NewBookResponse(BaseModel):
     tableoid: str
     id: int
     description: str
     price: int
     
+class PartitionResponse(BaseModel):
+    first: List[NewBookResponse]
+    second: List[NewBookResponse]
     
 class BookRequest(BaseModel):
     description: str
@@ -35,10 +38,10 @@ class BookResponse(BookRequest):
     class Config:
         from_attributes = True
         
+class BookLists(BaseModel):
+    data: List[BookResponse]
 
-class NewBookResponse(MyBaseModel):    
-    list: List[NewBookList]
-    model_config = ConfigDict(from_attributes=True)
+ 
       
 
 ############### Auth ################

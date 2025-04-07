@@ -5,6 +5,12 @@ from core.schemas import (
     BookRequest,
     BookResponse,
     NewBookResponse,
+    PartitionResponse,
+    BookLists
+)
+
+from typing import (
+    Any
 )
 
 
@@ -45,7 +51,10 @@ async def add_book(payload: BookRequest, db: AsyncSession = Depends(get_db)) -> 
     return {"message" : "성공입니다"}
     
 
-@book.get("/lists", description="Get book list", status_code=status.HTTP_200_OK)
+@book.get("/lists", 
+          description="Get book list",
+          response_model=BookLists,
+          status_code=status.HTTP_200_OK)
 async def get_books(
     db: AsyncSession = Depends(get_db)    
 ) -> dict:
@@ -64,7 +73,7 @@ async def get_books(
     for b in lists:
         print(vars(b))
     
-    return {"message" : "성공입니다", "list" : [BookResponse.model_validate(b) for b in lists]}
+    return {"data" : [BookResponse.model_validate(b) for b in lists]}
 
 
 @book.delete("/delete/{user_id}",description="delete book", status_code=status.HTTP_200_OK)
@@ -123,10 +132,13 @@ async def update_price(
     return {"message" : "성공입니다."}
 
 
-@book.get("/lists_price",description="Get book list price", status_code=status.HTTP_200_OK)
+@book.get("/lists_price",
+          description="Get book list price",
+          response_model=BookLists, 
+          status_code=status.HTTP_200_OK)
 async def get_book_price(
     db:AsyncSession = Depends(get_db)
-) -> None:
+) -> dict:
     
     stmt = select(Book).where(Book.price < 100)
     prices = await db.execute(stmt)
@@ -141,10 +153,7 @@ async def get_book_price(
     for b in lists:
         print(vars(b))
     
-    return {
-        "message": "성공입니다.",
-        "lists": [BookResponse.model_validate(b) for b in lists]
-    }
+    return {"data": [BookResponse.model_validate(b) for b in lists]}
     
 ########################## LIST Partiotion ##########################
 
@@ -172,19 +181,16 @@ r"""
     5. SELECT tableoid::regclass,* FROM new_book;
     마이그레이션 된 new_book 조회 (get_new_book)
     
-    
-    
 """
 
-@book.get("/partitions",description="get partition list" ,
-          response_model=NewBookResponse,
+@book.get("/partitions",description="get partition list",
+          response_model=PartitionResponse,
           status_code=status.HTTP_200_OK)
 async def get_new_book(
     db:AsyncSession = Depends(get_db)
-) -> None:
+) -> Any:
     
     new_book = await async_new_book()  
-    print(new_book)    
 
     first_dict = []
     second_dict = []
@@ -192,9 +198,7 @@ async def get_new_book(
     for tup in new_book:
         key = tup[0]
         values = tup[1:]
-        
-        print(key)
-        
+                
         if key == "new_book_fisrt":
             
             print(values[1])
@@ -218,10 +222,8 @@ async def get_new_book(
                 "price" : values[2]    
                 }
             ])
-            
-    # print(first_dict)
-    
+                
     return {
-        "message" : "성공입니다",      
-        # "list" : {first_dict}  
+        "first" : first_dict,
+        "second" : second_dict
     }
