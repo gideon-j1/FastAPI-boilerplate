@@ -188,7 +188,7 @@ r"""
           status_code=status.HTTP_200_OK)
 async def get_new_book(
     db:AsyncSession = Depends(get_db)
-) -> Any:
+) -> dict:
     
     new_book = await async_new_book()  
 
