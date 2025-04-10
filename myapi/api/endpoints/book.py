@@ -6,7 +6,7 @@ from core.schemas import (
     BookResponse,
     NewBookResponse,
     PartitionResponse,
-    BookLists
+    BookLists,
 )
 
 from typing import (
@@ -103,10 +103,9 @@ async def update_price(
     payload : BookRequest,
     db: AsyncSession = Depends(get_db)
 ) -> None:
-    
+
     stmt = select(Book).where(Book.id == user_id)
     book = await db.execute(stmt)
-    
     db_book = book.scalar_one_or_none()
     
     if db_book.price == payload.price:

@@ -21,8 +21,11 @@ class PartitionResponse(BaseModel):
     second: List[NewBookResponse]
     
 class BookRequest(BaseModel):
-    description: str
+    description: str | None = None
     price: int
+
+
+
 
 class BookResponse(BookRequest):
     id: int
