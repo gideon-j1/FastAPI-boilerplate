@@ -1,9 +1,11 @@
 import bcrypt
 import jwt
-
+import socket
 
 from content import SECRET_KEY
 from fastapi import HTTPException,status
+from urllib.parse import urlparse
+
 
 ALGORITHM = "HS256"
 
@@ -43,3 +45,4 @@ def verify_jwt_token(token: str) -> bool:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Invalid token a signauture"
         )
+    

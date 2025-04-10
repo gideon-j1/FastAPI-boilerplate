@@ -13,12 +13,11 @@ from typing import (
     Any
 )
 
-
 from fastapi import (
     status,
     APIRouter,
     Depends,   
-    HTTPException
+    HTTPException,
 )
 
 try:
@@ -33,7 +32,6 @@ except ImportError:
 book = APIRouter()
 
 @book.post("/add", description="Add book", status_code=status.HTTP_201_CREATED)
-
 async def add_book(payload: BookRequest, db: AsyncSession = Depends(get_db)) -> None:
     
     if payload.description == "" or payload.price == "":
@@ -56,7 +54,7 @@ async def add_book(payload: BookRequest, db: AsyncSession = Depends(get_db)) -> 
           response_model=BookLists,
           status_code=status.HTTP_200_OK)
 async def get_books(
-    db: AsyncSession = Depends(get_db)    
+    db: AsyncSession = Depends(get_db),
 ) -> dict:
 
     stmt = select(Book)

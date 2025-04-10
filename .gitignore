@@ -4,3 +4,6 @@ Scripts
 include
 __pycache__
 content.py
+
+.__pycache__
+.pytest_cache

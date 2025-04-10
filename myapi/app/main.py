@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException , Request
+from fastapi import FastAPI,Request
 import logging
 from app.models import Book
 
@@ -10,9 +10,6 @@ from api.endpoints.auth import auth
 from database.database import  engine, Base , create_tables , async_session
 from contextlib import asynccontextmanager
 
-
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     
@@ -21,16 +18,11 @@ async def lifespan(app: FastAPI):
         yield
     print("🛑 서버 종료: 데이터베이스 연결 닫기")
     await engine.dispose()
-    
-
-    
+        
 app = FastAPI(lifespan=lifespan)
-
-
 
 app.include_router(book)
 app.include_router(auth)
-
 
 origins: list[str] = [
     "localhost:8000",
@@ -51,13 +43,7 @@ app.add_middleware(
     allowed_hosts = origins
 )
 
-
-
-
-
 ####################################################################
-
-
 
 @app.get("/")
 async def root(req: Request):

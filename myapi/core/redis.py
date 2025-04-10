@@ -15,5 +15,5 @@ def add_redis_item(
     json_data = json.dumps(payload)
         
     redis_client.rpush("mytoken", json_data) 
-
+    
     return {"message" : "성공입니다."}
