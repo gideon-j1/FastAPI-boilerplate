@@ -64,7 +64,8 @@ async def create_user(
 
 @auth.post(
     "/login",
-    description="get token for a user"
+    description="get token for a user",
+    status_code=status.HTTP_200_OK
 )
 async def login_user(
     payload: UserRequest,
@@ -149,28 +150,41 @@ r"""
  }
 """
 
-@auth.get("/get_redis")
+@auth.get("/get_redis",
+          description="get token for a user in redis",
+          status_code=status.HTTP_200_OK
+)
 async def get_refresh_token(token: Dict[Any,Any] = None)->None:
     
-    token_list = redis_client.lrange("mytoken",0,100)    
+    token_list = redis_client.lrange("mytoken",0,100) 
+    
+    
+    if len(token_list) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="empty cache in redis"
+        )
     
     r"""
+        user_id : 2025-04-11  , 06:07
+        1744357916 : 2025-04-11  , 06:07
+        
         들어오는 토큰에 id가 현재 redis list에서 가져온 id와 동일한지 검사
         -> redis key에 저장된 exp값과 현재 시간 검사
         
         -> yse (토큰 유효기간이 아직 남아있음)
         -> no (새로운 토큰 발급하고 redis에 새로운 토큰으로 교체하고 토큰 발급)
     """
-    user_id = "9b755e04" 
+    user_id = "7cb6c968" 
     
-    cur_time = int(time.time())
+    cur_time = int(time.time()) - 36000
     for t in token_list:
         json_str = t.decode()
         
         token_data = json.loads(json_str)
                 
         if token_data["id"] == user_id:
-            if 1743922031 < cur_time:
+            if 1744369991 < cur_time:
                 access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
                 access_token = create_token(
@@ -200,7 +214,7 @@ async def get_refresh_token(token: Dict[Any,Any] = None)->None:
                             redis_client.lset("mytoken",idx,json.dumps(redis_payload))
                             
                             return {
-                                "mesaage" : "creat new access token",
+                                "message" : "create new access token",
                                 "token" : f"{access_token.access_token}"
                             } 
                                 

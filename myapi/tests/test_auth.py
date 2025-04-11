@@ -100,7 +100,7 @@ def test_login():
         assert 'iat' in decodedAccessInfo
         
         
-def test_get_typeingredis():
+def test_not_login():
     response = test_login()
             
     if isinstance(response,HTTPException):
@@ -117,3 +117,43 @@ def test_get_typeingredis():
             case 500:
                 assert response.detail == 'server Error !!'
                 assert response.status_code == 500
+
+
+
+r"""
+    api v1 : /get_redis (GET)
+
+    token = {
+        id : 9b755e04,
+        exp : 1744357916,
+        token : uey12321mlDHSAJK~
+        r_token : dasdsa21321
+    }
+"""
+
+def test_refresh_token():
+    
+    response = requests.get(f"{BASE_URL}/get_redis")
+    print(response.json())
+    
+    if response.status_code == 200:
+        
+        assert response.status_code == 200
+        assert response.json()['message'] == 'create new access token'
+        assert 'token' in response.json()
+
+    else:
+        return HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='expire time is valid.'
+        )
+        
+        
+
+def test_not_refresh():
+    response = test_refresh_token()
+            
+    if isinstance(response,HTTPException):
+        assert response.detail == 'expire time is valid.'
+        assert response.status_code == 400
+        
