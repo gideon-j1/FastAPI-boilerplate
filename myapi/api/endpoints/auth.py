@@ -47,6 +47,13 @@ async def create_user(
     hashed = save_hash_password(payload.password)
         
     new_user = AuthUser(email=payload.email,password=hashed)
+    
+    if not new_user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="not created user"
+        )
+    
         
     db.add(new_user)
     await db.commit()
@@ -80,7 +87,7 @@ async def login_user(
         
     if not hashed:
         raise HTTPException(
-            status_code = status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code = status.HTTP_401_UNAUTHORIZED,
             detail="user password is wrong"
         )
     

@@ -80,7 +80,6 @@ async def delete_book(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     
-
     stmt = select(Book).where(Book.id == user_id)
     book = await db.execute(stmt)
         
@@ -188,7 +187,14 @@ async def get_new_book(
 ) -> dict:
     
     new_book = await async_new_book()  
+    
+    if not new_book:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail = "not prepare partions query"
+            )
 
+    
     first_dict = []
     second_dict = []
     
@@ -198,7 +204,6 @@ async def get_new_book(
                 
         if key == "new_book_fisrt":
             
-            print(values[1])
 
             first_dict.extend([
                 {
@@ -219,7 +224,12 @@ async def get_new_book(
                 "price" : values[2]    
                 }
             ])
-                
+        
+    for val in first_dict + second_dict:
+        if not isinstance(val,dict):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="not type dict")
+        
+    
     return {
         "first" : first_dict,
         "second" : second_dict

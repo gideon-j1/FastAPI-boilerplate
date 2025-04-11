@@ -21,7 +21,14 @@ async def test_client():
         assert isinstance(db,AsyncSession)
         assert db.bind == async_session.kw["bind"]
         await db.close()
+        
 
+
+
+
+r"""
+    api v1 : /lists (GET)
+"""
 
 def test_lists():
     response = requests.get(f"{BASE_URL}/lists")
@@ -40,6 +47,10 @@ def test_lists():
         
     else:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="list not found Plesas add book")
+
+r"""
+    api v1 : /lists_price (GET)
+"""
 
 def test_list_price():
     response = requests.get(f"{BASE_URL}/lists_price")
@@ -71,6 +82,11 @@ def test_empty_lists():
         assert response.status_code == 404
 
 
+r"""
+    api v1 : /update{user_id} (put)
+
+"""
+
 def test_update():
     user_id = 11    
     response = requests.put(f"{BASE_URL}/update/{user_id}",json={
@@ -90,7 +106,12 @@ def test_not_update():
         assert response.detail == 'duplicate input price'
         assert response.status_code == 403
     
-        
+
+
+r"""
+    api v1 : /add (post)
+"""
+
 def test_add():
     response = requests.post(f"{BASE_URL}/add",json={
         'description' : 'user1',
@@ -109,4 +130,68 @@ def test_not_add():
     if isinstance(response,HTTPException):
         assert response.detail == 'descript or price empty'
         assert response.status_code == 422
+
+
+r"""
+    api v1 : /partitions (GET)
+"""
+
+def test_get_redis():
+    response = requests.get(f"{BASE_URL}/partitions")
     
+    match response.status_code:
+        case 400:
+            return HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail='not type dict')
+    
+        case 500:
+            return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail='not prepare partions query')
+    
+    if response.status_code == 200:                  
+        first = response.json()['first']
+        seconde = response.json()['second']
+            
+        keys_first = [*first[0]]
+        keys_second = [*seconde[0]]
+
+        assert response.status_code == 200
+
+        for val in [keys_first,keys_second]:
+            assert val[0] == 'tableoid'
+            assert val[1] == 'id'
+            assert val[2] == 'description'     
+            assert val[3] == 'price'
+            
+        
+def test_get_typeingredis():
+    response = test_get_redis()
+            
+    if isinstance(response,HTTPException):
+        match response.status_code:
+            case 400:                
+                assert response.detail == 'not type dict'
+                assert response.status_code == 400
+            case 500:
+                assert response.detail == 'not prepare partions query'
+                assert response.status_code == 500
+            
+r"""
+    api v1 : /delete (DELETE)
+"""
+
+def test_delete_book():
+    user_id = 20
+    response = requests.delete(f"{BASE_URL}/delete/{user_id}")
+    
+    if response.status_code == 200:
+        assert response.status_code == 200
+
+    else:
+        return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail='book id not found')
+    
+    
+def test_not_delete():
+    response = test_delete_book()
+    
+    if isinstance(response,HTTPException):
+        assert response.detail == 'book id not found'
+        assert response.status_code == 500

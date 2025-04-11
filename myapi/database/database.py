@@ -89,7 +89,6 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
         await db.close()
 
 ############################# Redis DB ###############################
-
 redis_client = redis.Redis(
     host="localhost",
     port=6379,
