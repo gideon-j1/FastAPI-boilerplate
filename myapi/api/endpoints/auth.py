@@ -175,16 +175,16 @@ async def get_refresh_token(token: Dict[Any,Any] = None)->None:
         -> yse (토큰 유효기간이 아직 남아있음)
         -> no (새로운 토큰 발급하고 redis에 새로운 토큰으로 교체하고 토큰 발급)
     """
-    user_id = "7cb6c968" 
+    user_id = "f2e0b67b"
     
-    cur_time = int(time.time()) - 36000
+    cur_time = int(time.time())
     for t in token_list:
         json_str = t.decode()
         
         token_data = json.loads(json_str)
                 
         if token_data["id"] == user_id:
-            if 1744369991 < cur_time:
+            if 1744370751 < cur_time:
                 access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
                 access_token = create_token(
